@@ -1,36 +1,31 @@
-# This is a basic workflow to help you get started with Actions
+name: Deploy to Informatica IICS
 
-name: CI
-
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches:
+      - main  # Runs when changes are pushed to the main branch
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  deploy:
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      - name: Authenticate with Informatica IICS
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          echo "Authenticating with IICS..."
+          RESPONSE=$(curl -X POST "https://<IICS_URL>/v3/login" \
+               -H "Content-Type: application/json" \
+               -d '{"username": "${{ secrets.IICS_USERNAME }}", "password": "${{ secrets.IICS_PASSWORD }}"}')
+          TOKEN=$(echo $RESPONSE | jq -r '.token')
+          echo "::add-mask::$TOKEN"
+          echo "INFA_TOKEN=$TOKEN" >> $GITHUB_ENV
+
+      - name: Deploy Mapping to Informatica
+        run: |
+          echo "Deploying XML Mapping to Informatica..."
+          curl -X POST "https://<IICS_URL>/v3/mapping/import" \
+               -H "Authorization: Bearer $INFA_TOKEN" \
+               -F "file=@MyMapping.xml"
