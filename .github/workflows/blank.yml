@@ -18,7 +18,7 @@ jobs:
           echo "Authenticating with IICS..."
           RESPONSE=$(curl -X POST "https://<IICS_URL>/v3/login" \
                -H "Content-Type: application/json" \
-               -d '{"username": "${{ secrets.IICS_USERNAME }}", "password": "${{ secrets.IICS_PASSWORD }}"}')
+               -d '{"username": "${{ secrets.sherin }}", "password": "${{ secrets.Iloveindia@24! }}"}')
           TOKEN=$(echo $RESPONSE | jq -r '.token')
           echo "::add-mask::$TOKEN"
           echo "INFA_TOKEN=$TOKEN" >> $GITHUB_ENV
